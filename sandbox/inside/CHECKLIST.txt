@@ -1,0 +1,50 @@
+VIDEOMERGER - CLEAN PC TEST
+===========================
+
+This Sandbox is a brand-new copy of Windows: no FFmpeg, no Python.
+Everything is thrown away when you close it, except the "Test videos"
+folder on the desktop, which is shared with your real PC.
+
+Write down anything that looks wrong, confusing, or slow.
+
+
+1. FIRST LAUNCH
+   [ ] Double-click VideoMerger.exe on the desktop.
+   [ ] Expect "Windows protected your PC" (the app isn't code-signed yet).
+       Click "More info" -> "Run anyway". Your friends will see this too.
+   [ ] The window opens (may take ~5-10 seconds the first time).
+   [ ] An "FFmpeg needed" box appears. Click "Download".
+   [ ] The progress bar fills (about 110 MB), then "FFmpeg is ready". Click OK.
+
+2. LOSSLESS MERGE (matching clips)
+   [ ] Click "Add files...", open "Test videos" on the desktop,
+       select "01 Beach day" and "02 Sunset", click Open.
+   [ ] The message under "Advanced" says the videos match and will be
+       joined without re-encoding.
+   [ ] Click Merge. It should finish in a second or two.
+   [ ] Click "Show in folder" and play merged.mp4:
+       Beach day (440 Hz tone) then Sunset (higher tone), 11 seconds total.
+
+3. MIXED MERGE (everything different)
+   [ ] Click "Clear". Drag ALL the videos from the "Test videos" folder
+       onto the list (drag-and-drop from File Explorer).
+   [ ] "Not a video.mp4" is refused with a clear message; the others are added.
+   [ ] Drag "05 Silent screen recording" to the top of the list.
+   [ ] The message says the videos will be re-encoded and explains why.
+   [ ] Click Merge. Watch the progress bar and "time left".
+   [ ] Play the result: order is 05, 01, 02, 03, 04. The vertical phone clip
+       has black bars at the sides, nothing is stretched, sound stays in sync,
+       and 05 is silent.
+
+4. CANCEL
+   [ ] Start the same merge again (say "Yes" to replace the file),
+       then click Cancel halfway.
+   [ ] It stops, says "Cancelled", and no half-finished file is left behind.
+
+5. SECOND LAUNCH
+   [ ] Close VideoMerger and open it again.
+   [ ] It does NOT ask to download FFmpeg again.
+   [ ] Help -> About shows the FFmpeg version and where it came from.
+
+When you're done, close the Sandbox window and tell Claude how it went.
+Claude can check the merged videos in the "Test videos" folder.

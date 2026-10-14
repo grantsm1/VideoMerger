@@ -1,0 +1,4 @@
+# Needed to run VideoMerger from source
+PySide6==6.12.0
+truststore==0.10.5   # check HTTPS certificates through Windows itself
+certifi==2026.7.22   # fallback list of trusted certificate authorities

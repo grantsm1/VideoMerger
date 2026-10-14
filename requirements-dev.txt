@@ -1,0 +1,6 @@
+# Needed to test and build VideoMerger
+-r requirements.txt
+pytest==9.1.1
+pyinstaller==6.22.3
+pywinauto==0.6.9   # drives the real .exe in tools/cleanpc_test.py
+pillow==12.3.0     # screenshots in tools/cleanpc_test.py
