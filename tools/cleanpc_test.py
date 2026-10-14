@@ -1,4 +1,4 @@
-﻿"""End-to-end test of the built .exe as if on a PC that has never had FFmpeg.
+"""End-to-end test of the built .exe as if on a PC that has never had FFmpeg.
 
     python tools/cleanpc_test.py dist/VideoMerger.exe <empty work folder>
 
@@ -26,7 +26,10 @@ from pywinauto import Desktop
 from pywinauto.keyboard import send_keys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from videomerger import __version__  # noqa: E402
 from videomerger.ffmpeg_locator import find_ffmpeg  # noqa: E402  (test machine's FFmpeg)
+
+MAIN_TITLE = f"VideoMerger {__version__}"
 
 WIN = os.environ.get("SystemRoot", r"C:\Windows")
 CLEAN_PATH = ";".join([rf"{WIN}\system32", WIN, rf"{WIN}\System32\Wbem",
@@ -129,7 +132,7 @@ def main() -> int:
     t0 = time.monotonic()
     proc = launch(exe, env)
     try:
-        main_win = wait_window(None, "VideoMerger 0.1.0", 60)
+        main_win = wait_window(None, MAIN_TITLE, 60)
         pid = main_win.process_id()
         step(f"Main window up after {time.monotonic() - t0:.1f}s")
 
@@ -208,7 +211,7 @@ def main() -> int:
     t0 = time.monotonic()
     proc = launch(exe, env)
     try:
-        main_win = wait_window(None, "VideoMerger 0.1.0", 60)
+        main_win = wait_window(None, MAIN_TITLE, 60)
         pid = main_win.process_id()
         step(f"Main window up after {time.monotonic() - t0:.1f}s")
         try:
