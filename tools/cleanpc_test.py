@@ -63,7 +63,13 @@ def find(win, control_type: str, name: str | None = None):
 
 
 def click(win, name: str):
-    find(win, "Button", name).click_input()
+    button = find(win, "Button", name)
+    try:
+        # Press it through UI Automation: works even when Windows won't move
+        # the mouse (display asleep, screen inactive).
+        button.invoke()
+    except Exception:
+        button.click_input()
 
 
 def snap(win, path: Path):
@@ -142,6 +148,14 @@ def main() -> int:
         ready = wait_window(pid, "FFmpeg is ready", 300)
         step(f"FFmpeg installed after {time.monotonic() - t1:.0f}s")
         click(ready, "OK")
+
+        # Desktop/Start menu offer. Answer "Not now": on a real PC this test
+        # must not put shortcuts on the user's actual desktop (that part is
+        # covered by tests/test_install.py and the Sandbox checklist).
+        offer = wait_window(pid, "Add to Desktop", 15)
+        step("Desktop shortcut offer shown")
+        snap(offer, shots / "1b_shortcut_offer.png")
+        click(offer, "Not now")
 
         bin_dir = appdata / "VideoMerger" / "ffmpeg" / "bin"
         assert (bin_dir / "ffmpeg.exe").is_file() and (bin_dir / "ffprobe.exe").is_file()

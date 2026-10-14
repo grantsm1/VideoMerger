@@ -17,7 +17,7 @@ from PySide6.QtWidgets import (QAbstractItemView, QApplication, QComboBox, QDial
                                QMessageBox, QProgressBar, QPushButton, QToolButton,
                                QVBoxLayout, QWidget)
 
-from . import APP_NAME, __version__
+from . import APP_NAME, __version__, install
 from .downloader import (SOURCES, DownloadCancelled, DownloadError, download_ffmpeg,
                          installed_info)
 from .engine import (OUTPUT_FORMATS, ClipInfo, MergeCancelled, MergeError, MergeOptions,
@@ -318,9 +318,12 @@ def offer_ffmpeg_download(parent: QWidget, update: bool = False) -> FFmpegPaths 
 # --------------------------------------------------------------------------- #
 
 class MainWindow(QMainWindow):
-    def __init__(self, paths: FFmpegPaths | None):
+    def __init__(self, paths: FFmpegPaths | None, exe: Path | None = None):
+        """`exe` is the VideoMerger.exe to install for shortcuts; by default the
+        running .exe, or None when running from source (no install offered)."""
         super().__init__()
         self.paths = paths
+        self.exe = exe or install.running_exe()
         self.settings = QSettings(APP_NAME, APP_NAME)
         self.plan: MergePlan | None = None
         self.thread: QThread | None = None
@@ -338,6 +341,13 @@ class MainWindow(QMainWindow):
     # ---- FFmpeg ----------------------------------------------------------- #
 
     def _build_menu(self):
+        file_menu = self.menuBar().addMenu("&File")
+        self.install_action = file_menu.addAction("Add to Desktop and Start menu…")
+        self.install_action.triggered.connect(lambda: self.install_shortcuts())
+        self.install_action.setVisible(self.exe is not None)
+        file_menu.addSeparator()
+        file_menu.addAction("Exit", self.close)
+
         help_menu = self.menuBar().addMenu("&Help")
         self.ffmpeg_action = help_menu.addAction("Download FFmpeg…")
         self.ffmpeg_action.triggered.connect(self.download_ffmpeg)
@@ -354,6 +364,64 @@ class MainWindow(QMainWindow):
     def set_paths(self, paths: FFmpegPaths | None):
         self.paths = paths
         self._refresh()
+
+    # ---- first run, desktop + Start menu shortcuts ------------------------- #
+
+    def first_run(self):
+        """Called once the window is on screen: offer FFmpeg, then shortcuts."""
+        if self.paths is None:
+            self.download_ffmpeg()
+        self.maybe_offer_install()
+
+    def maybe_offer_install(self):
+        """Ask (until the user says "don't ask again") to add shortcuts, or to
+        update the installed copy when this exe is a different version."""
+        if self.exe is None or self.settings.value("install/dont_ask", False, type=bool):
+            return
+        try:
+            state = install.install_state(self.exe)
+            if state == install.InstallState.THIS_COPY or (
+                    state == install.InstallState.SAME and install.shortcuts_exist()):
+                return
+            target = install.installed_exe()
+        except (OSError, install.InstallError):
+            return   # never let the offer get in the way of using the app
+
+        update = state == install.InstallState.DIFFERENT
+        box = QMessageBox(QMessageBox.Question,
+                          "Update VideoMerger" if update else "Add to Desktop",
+                          "Update the installed VideoMerger to this version?" if update
+                          else f"Add {APP_NAME} to your desktop and Start menu?", parent=self)
+        box.setInformativeText(
+            f"{APP_NAME} will be copied to {target.parent} so the shortcuts keep "
+            "working even if you delete the file you downloaded. "
+            "No administrator rights are needed.")
+        yes = box.addButton("Update" if update else "Add shortcuts", QMessageBox.AcceptRole)
+        box.addButton("Not now", QMessageBox.RejectRole)
+        never = box.addButton("Don't ask again", QMessageBox.DestructiveRole)
+        box.setDefaultButton(yes)
+        box.exec()
+        if box.clickedButton() is yes:
+            self.install_shortcuts()
+        elif box.clickedButton() is never:
+            self.settings.setValue("install/dont_ask", True)
+
+    def install_shortcuts(self) -> bool:
+        if self.exe is None:
+            return False
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        try:
+            result = install.install(self.exe)
+        except install.InstallError as exc:
+            QApplication.restoreOverrideCursor()
+            QMessageBox.warning(self, "Couldn't add shortcuts", str(exc))
+            return False
+        QApplication.restoreOverrideCursor()
+        text = f"{APP_NAME} is now on your desktop and in the Start menu."
+        if result.copied:
+            text += (f"\n\nYou can delete the copy you downloaded:\n{self.exe}")
+        QMessageBox.information(self, "Shortcuts added", text)
+        return True
 
     def _about(self):
         info = installed_info()
@@ -822,9 +890,8 @@ def main() -> int:
     paths = find_ffmpeg()
     window = MainWindow(paths)
     window.show()
-    if paths is None:
-        # First run: offer the download once the window is on screen.
-        QTimer.singleShot(0, window.download_ffmpeg)
+    # Offer FFmpeg / shortcuts once the window is on screen.
+    QTimer.singleShot(0, window.first_run)
     return app.exec()
 
 

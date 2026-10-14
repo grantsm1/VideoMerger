@@ -15,6 +15,14 @@ Write down anything that looks wrong, confusing, or slow.
    [ ] The window opens (may take ~5-10 seconds the first time).
    [ ] An "FFmpeg needed" box appears. Click "Download".
    [ ] The progress bar fills (about 110 MB), then "FFmpeg is ready". Click OK.
+   [ ] "Add VideoMerger to your desktop and Start menu?" appears.
+       Click "Add shortcuts", then OK.
+   [ ] A VideoMerger icon (orange) is on the desktop, and VideoMerger is in
+       the Start menu (press Start and type VideoMerger).
+   [ ] Close VideoMerger, delete VideoMerger.exe from the desktop (the
+       downloaded copy, not the shortcut), then open VideoMerger from the
+       new desktop shortcut. It opens, without asking for FFmpeg or
+       shortcuts again.
 
 2. LOSSLESS MERGE (matching clips)
    [ ] Click "Add files...", open "Test videos" on the desktop,

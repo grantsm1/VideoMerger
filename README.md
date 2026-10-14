@@ -20,7 +20,13 @@ A small Windows app for joining video files into one, using FFmpeg.
    code-signed yet: click **More info → Run anyway**.
 3. Click **Download** when asked for FFmpeg (one time only).
 
-To uninstall: delete `VideoMerger.exe` and the folder `%LOCALAPPDATA%\VideoMerger`.
+On first launch the app also offers to add itself to the **Desktop and Start
+menu** (also under **File → Add to Desktop and Start menu**). This copies the exe
+to `%LOCALAPPDATA%\Programs\VideoMerger` so the shortcuts keep working after the
+downloaded file is deleted. No administrator rights needed.
+
+To uninstall: delete the VideoMerger shortcuts (Desktop and Start menu), and the
+folders `%LOCALAPPDATA%\Programs\VideoMerger` and `%LOCALAPPDATA%\VideoMerger`.
 
 ## Developing
 
